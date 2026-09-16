@@ -4,9 +4,10 @@ import tkinter as tk
 import screeninfo
 from scipy import signal
 
-monitor = 0
+monitor = 1
 resolution = (1080, 1920)
-x_max_list =[7, 14, 21 ,28, 36, 42]
+# x_max_list =[7, 14, 21]
+x_max_list =[28, 35, 42]
 
 class ImageDisplay(tk.Toplevel):
     def __init__(self, monitor: int):
@@ -69,32 +70,25 @@ class App(tk.Tk):
         self.mainloop()
 
 def tiled_sawtooth_pattern(x_max_list, resolution: tuple[int, int]):
-    assert len(x_max_list) == 6
+    assert len(x_max_list) == 3
 
     img_matrix = np.zeros(resolution, dtype=np.uint8)
 
     for i, x_max in enumerate(x_max_list):
-        pattern_width = int(resolution[1] / 3)
-        pattern_height = int(resolution[0] / 2)
+        pattern_width = int(resolution[1])
+        pattern_height = int(resolution[0] / 3)
 
-        t = np.arange(pattern_width)
+        t = np.arange(pattern_height)
         omega = 2 * np.pi * (1 / x_max)
         waveform = (1 + signal.sawtooth(omega * t)) * 128
 
-        pattern = np.tile(waveform, (pattern_height, 1))
+        pattern = np.tile(waveform, (pattern_width, 1)).T
 
-        if i <= 2:
-            start_height = 0
-            stop_height = pattern_height
-            start_width = i * pattern_width
-            stop_width = start_width + pattern_width
-        else:
-            start_height = pattern_height
-            stop_height = 2 * pattern_height
-            start_width = (i - 3) * pattern_width
-            stop_width = start_width + pattern_width
+        start_height = pattern_height * i
+        stop_height = pattern_height * (i+1)
 
-        img_matrix[start_height:stop_height, start_width:stop_width] = pattern
+
+        img_matrix[start_height:stop_height, 0:pattern_width] = pattern
 
     return Image.fromarray(img_matrix)
 
